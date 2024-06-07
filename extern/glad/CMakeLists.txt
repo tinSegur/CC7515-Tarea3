@@ -4,5 +4,5 @@ project(Glad)
 
 find_package(OpenGL REQUIRED)
 add_library(glad src/glad.c)
-target_link_libraries(glad PRIVATE OpenGL::OpenGL)
+target_link_libraries(glad PUBLIC OpenGL::GL)
 target_include_directories(glad PUBLIC include/)
