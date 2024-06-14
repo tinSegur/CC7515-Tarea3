@@ -81,8 +81,20 @@ void Shader::set(const string &name, const glm::mat4 &value) {
   glUniformMatrix4fv(get(name), 1, GL_FALSE, glm::value_ptr(value));
 }
 
+void Shader::set(const string &name, const glm::vec2 &value) {
+  glUniform2fv(get(name), 1, glm::value_ptr(value));
+}
+
 void Shader::set(const string &name, const glm::vec3 &value) {
   glUniform3fv(get(name), 1, glm::value_ptr(value));
+}
+
+unsigned int Shader::getSubroutine(int type, const string &name) {
+  return glGetSubroutineIndex(id_, type, name.c_str());
+}
+
+void Shader::setSubroutine(int type, const std::vector<unsigned int>& values) {
+  glUniformSubroutinesuiv(type, values.size(), values.data());
 }
 
 int Shader::get(const string &name) {

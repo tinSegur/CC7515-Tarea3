@@ -62,7 +62,7 @@ App::App(unsigned int glmajor, unsigned int glminor, int width, int height,
   glfwSetErrorCallback(global_error_callback);
   glfwInit();
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, glmajor);
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, glmajor);
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, glminor);
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 #ifdef __APPLE__
   glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);

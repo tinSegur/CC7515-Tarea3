@@ -19,7 +19,11 @@ public:
   void set(const std::string &name, int value);
   void set(const std::string &name, bool value);
   void set(const std::string &name, const glm::mat4 &value);
+  void set(const std::string &name, const glm::vec2 &value);
   void set(const std::string &name, const glm::vec3 &value);
+
+  unsigned int getSubroutine(int type, const std::string &name);
+  void setSubroutine(int type, const std::vector<unsigned int> &value);
 
 private:
   unsigned int id_;

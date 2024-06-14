@@ -7,3 +7,4 @@ endfunction()
 
 
 add_example(collision)
+add_example(subroutines)
