@@ -6,7 +6,6 @@
 
 using vec = std::vector<unsigned char>;
 
-
 Texture::Texture(const vec &data, int width, int height, int nrChannels)
     : width_(width), height_(height), nrChannels_(nrChannels) {
   build(data.data());
@@ -24,23 +23,43 @@ Texture::Texture(const std::string &path) {
   stbi_image_free(data);
 }
 
+Texture::Texture(Texture &&o)
+    : id_(o.id_), width_(o.width_), height_(o.height_),
+      nrChannels_(o.nrChannels_) {
+  o.id_ = 0;
+}
+Texture &Texture::operator=(Texture &&o) {
+  if (id_) glDeleteTextures(1, &id_);
+  id_ = o.id_;
+  width_ = o.width_;
+  height_ = o.height_;
+  nrChannels_ = o.nrChannels_;
+  o.id_ = 0;
+  o.width_ = 0;
+  o.height_ = 0;
+  o.nrChannels_ = 0;
+  return *this;
+}
+
 Texture::~Texture() {
-  glDeleteTextures(1, &id_); 
+  if (id_) {
+    glDeleteTextures(1, &id_);
+  }
 }
 
 void Texture::build(const unsigned char *data) {
   unsigned int format;
   switch (nrChannels_) {
-    case 3:
-      format = GL_RGB;
-      break;
-    case 4:
-      format = GL_RGBA;
-      break;
-    default:
-      format = 0;
-      std::cerr << "Unknown format (" << nrChannels_ << ")" << std::endl;
-      break;
+  case 3:
+    format = GL_RGB;
+    break;
+  case 4:
+    format = GL_RGBA;
+    break;
+  default:
+    format = 0;
+    std::cerr << "Unknown format (" << nrChannels_ << ")" << std::endl;
+    break;
   }
   glGenTextures(1, &id_);
   glBindTexture(GL_TEXTURE_2D, id_);
@@ -57,4 +76,3 @@ void Texture::build(const unsigned char *data) {
 }
 
 void Texture::bind() { glBindTexture(GL_TEXTURE_2D, id_); }
-

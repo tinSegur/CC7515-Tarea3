@@ -1,5 +1,6 @@
 #include <glad/glad.h>
 #include <glcore/buffer.h>
+#include <utility>
 
 using vec = std::vector<float>;
 using uvec = std::vector<unsigned int>;
@@ -13,13 +14,33 @@ VertexBuffer::VertexBuffer() {
   glGenBuffers(1, &vbo_);
 }
 
-VertexBuffer::VertexBuffer(const vec &vertices): VertexBuffer() {
+VertexBuffer::VertexBuffer(const vec &vertices) : VertexBuffer() {
   vertices_ = vertices;
+}
+VertexBuffer::VertexBuffer(VertexBuffer &&o)
+    : vao_(o.vao_), vbo_(o.vbo_), vertices_(std::move(o.vertices_)) {
+  o.vao_ = 0;
+  o.vbo_ = 0;
+}
+
+VertexBuffer &VertexBuffer::operator=(VertexBuffer &&o) {
+  if (vao_) {
+    glDeleteVertexArrays(1, &vao_);
+    glDeleteBuffers(1, &vbo_);
+  }
+  vao_ = o.vao_;
+  vbo_ = o.vbo_;
+  vertices_ = std::move(o.vertices_);
+  o.vao_ = 0;
+  o.vbo_ = 0;
+  return *this;
 }
 
 VertexBuffer::~VertexBuffer() {
-  glDeleteVertexArrays(1, &vao_);
-  glDeleteBuffers(1, &vbo_);
+  if (vao_) {
+    glDeleteVertexArrays(1, &vao_);
+    glDeleteBuffers(1, &vbo_);
+  }
 }
 
 void VertexBuffer::draw() {
@@ -42,9 +63,7 @@ void VertexBuffer::bind() {
 
 /******************* BASIC BUFFER **************************************/
 
-BasicBuffer::BasicBuffer(): VertexBuffer() {
-  glGenBuffers(1, &ebo_);
-}
+BasicBuffer::BasicBuffer() : VertexBuffer() { glGenBuffers(1, &ebo_); }
 
 BasicBuffer::BasicBuffer(const vec &vertices) : BasicBuffer() {
   vertices_ = vertices;
@@ -55,8 +74,24 @@ BasicBuffer::BasicBuffer(const vec &vertices, const uvec &indices)
   indices_ = indices;
 }
 
+BasicBuffer::BasicBuffer(BasicBuffer &&o)
+    : VertexBuffer(std::move(o)), indices_(std::move(o.indices_)), ebo_(o.ebo_) {
+  o.ebo_ = 0;
+}
+
+BasicBuffer &BasicBuffer::operator=(BasicBuffer &&o) {
+  if (vao_)
+    glDeleteBuffers(1, &ebo_);
+  VertexBuffer::operator=(std::move(o));
+  ebo_ = o.ebo_;
+  indices_ = std::move(o.indices_);
+  o.ebo_ = 0;
+  return *this;
+}
+
 BasicBuffer::~BasicBuffer() {
-  glDeleteBuffers(1, &ebo_);
+  if (vao_)
+    glDeleteBuffers(1, &ebo_);
 }
 
 void BasicBuffer::draw() {

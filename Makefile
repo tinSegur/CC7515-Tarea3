@@ -2,7 +2,7 @@ BUILD = build
 CMAKE = cmake
 MAKE = make
 TYPE = Debug
-TARGET = subroutines
+TARGET = textures
 
 all: run
 

@@ -8,10 +8,8 @@ public:
   Shader(const std::string &vertexPath, const std::string &fragmentPath);
   Shader(const std::string &vertexPath, const std::string &geometryPath,
          const std::string &fragmentPath);
-  Shader(Shader &&) = default;
-  Shader(const Shader &) = default;
-  Shader &operator=(Shader &&) = default;
-  Shader &operator=(const Shader &) = default;
+  Shader(Shader &&);
+  Shader &operator=(Shader &&);
   ~Shader();
 
   void use();

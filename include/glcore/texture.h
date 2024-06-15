@@ -8,10 +8,8 @@ class Texture {
 public:
   Texture(const std::string &path);
   Texture(const std::vector<unsigned char> &data, int width, int height, int nrChannels);
-  Texture(Texture &&) = default;
-  Texture(const Texture &) = default;
-  Texture &operator=(Texture &&) = default;
-  Texture &operator=(const Texture &) = default;
+  Texture(Texture &&);
+  Texture &operator=(Texture &&);
   ~Texture();
 
   void bind();

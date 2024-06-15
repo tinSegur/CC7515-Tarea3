@@ -15,10 +15,8 @@ class VertexBuffer: public Buffer {
 public:
   VertexBuffer();
   VertexBuffer(const std::vector<float> &vertices);
-  VertexBuffer(VertexBuffer &&) = default;
-  VertexBuffer(const VertexBuffer &) = default;
-  VertexBuffer &operator=(VertexBuffer &&) = default;
-  VertexBuffer &operator=(const VertexBuffer &) = default;
+  VertexBuffer(VertexBuffer &&);
+  VertexBuffer &operator=(VertexBuffer &&);
   ~VertexBuffer() override;
 
   void draw() override;
@@ -36,10 +34,8 @@ public:
   BasicBuffer(const std::vector<float> &vertices);
   BasicBuffer(const std::vector<float> &vertices,
               const std::vector<unsigned int> &indices);
-  BasicBuffer(BasicBuffer &&) = default;
-  BasicBuffer(const BasicBuffer &) = default;
-  BasicBuffer &operator=(BasicBuffer &&) = default;
-  BasicBuffer &operator=(const BasicBuffer &) = default;
+  BasicBuffer(BasicBuffer &&);
+  BasicBuffer &operator=(BasicBuffer &&);
   ~BasicBuffer() override;
 
   void draw() override;

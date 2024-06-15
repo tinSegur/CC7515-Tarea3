@@ -61,7 +61,20 @@ Shader::Shader(const string &vertexPath, const string &geometryPath,
   GL_CHECK_ERRORS(id_, GL_LINK_STATUS, glGetProgramiv, glGetProgramInfoLog);
 }
 
-Shader::~Shader() { glDeleteProgram(id_); }
+Shader::Shader(Shader &&o): id_(o.id_) {
+  o.id_ = 0;
+}
+Shader &Shader::operator=(Shader &&o) {
+  if (id_) glDeleteProgram(id_);
+  id_ = o.id_;
+  o.id_ = 0;
+  return *this;
+}
+
+Shader::~Shader() { 
+  if (id_)
+    glDeleteProgram(id_); 
+}
 
 void Shader::use() { glUseProgram(id_); }
 
