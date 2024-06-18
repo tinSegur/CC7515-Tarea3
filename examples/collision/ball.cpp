@@ -3,6 +3,7 @@
 #include "glm/ext/matrix_transform.hpp"
 #include <vector>
 #include <numbers>
+#include <memory>
 
 #define DEFINITION 20
 

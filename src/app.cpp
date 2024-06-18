@@ -1,5 +1,5 @@
 #include "imgui.h"
-#include <format>
+#include <fmt/core.h>
 #include <glcore/app.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
@@ -100,7 +100,8 @@ App::App(unsigned int glmajor, unsigned int glminor, int width, int height,
   glfwSetScrollCallback(window, global_scroll_callback);
 
   ImGui_ImplGlfw_InitForOpenGL(window, true);
-  ImGui_ImplOpenGL3_Init(std::format("#version {}{}0", glmajor, glminor).c_str());
+  string vstring = fmt::format("#version {}{}0", glmajor, glminor);
+  ImGui_ImplOpenGL3_Init(vstring.c_str());
   glEnable(GL_DEPTH_TEST);
 }
 
