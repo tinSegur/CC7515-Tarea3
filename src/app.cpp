@@ -6,6 +6,7 @@
 #include <iostream>
 
 using std::string;
+using fmt::format;
 
 static App *current = nullptr;
 
@@ -100,7 +101,7 @@ App::App(unsigned int glmajor, unsigned int glminor, int width, int height,
   glfwSetScrollCallback(window, global_scroll_callback);
 
   ImGui_ImplGlfw_InitForOpenGL(window, true);
-  string vstring = fmt::format("#version {}{}0", glmajor, glminor);
+  string vstring = format("#version {}{}0", glmajor, glminor);
   ImGui_ImplOpenGL3_Init(vstring.c_str());
   glEnable(GL_DEPTH_TEST);
 }

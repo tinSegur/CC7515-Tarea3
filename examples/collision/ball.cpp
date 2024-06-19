@@ -7,7 +7,7 @@
 
 #define DEFINITION 20
 
- static std::unique_ptr<Buffer> buff = nullptr;
+static std::unique_ptr<Buffer> buff = nullptr;
 
 
 std::vector<float> generate_circle_vertex(unsigned int n) {
