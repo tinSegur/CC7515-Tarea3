@@ -37,8 +37,8 @@ public:
          0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
          -0.5f, 0.5f,  0.5f,  0.0f, 0.0f, -0.5f, 0.5f,  -0.5f, 0.0f, 1.0f});*/
 
-    std::vector<float> data = generatePlaneVx(120, 120);
-    std::vector<unsigned int> inds = generatePlaneInds(120, 120);
+    std::vector<float> data = generatePlaneVx(240, 240);
+    std::vector<unsigned int> inds = generatePlaneInds(240, 240);
     nbuf = std::make_unique<BasicBuffer>(data, inds);
 
     settings.container = textures.size();
@@ -133,6 +133,9 @@ public:
       }
       if (key == GLFW_KEY_A) {
         settings.xcam -= 1.f;
+      }
+      if (key == GLFW_KEY_SPACE) {
+
       }
       if (key == GLFW_KEY_ESCAPE)
         glfwSetWindowShouldClose(window, 1);
