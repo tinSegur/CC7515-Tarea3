@@ -23,8 +23,6 @@ float random (vec3 st) {
                          vec3(12.9898,78.233,56.3212)))*43758.5453123);
 }
 
-
-
 float noise(vec2 st){
     vec2 i = floor(st);
     vec2 f = fract(st);
@@ -42,13 +40,13 @@ float noise(vec2 st){
     (d - b) * u.x * u.y;
 }
 
-#define OCTAVES 6
+#define OCTAVES 12
 float fbm (vec2 st) {
     // Initial values
     float value = 0.0;
     float amplitude = .5;
     float frequency = 0.;
-    //
+
     // Loop of octaves
     for (int i = 0; i < OCTAVES; i++) {
         value += amplitude * noise(st);
@@ -56,6 +54,18 @@ float fbm (vec2 st) {
         amplitude *= .5;
     }
     return value;
+}
+
+vec2 spaceMap(vec2 ps){
+    return ps*0.1;
+}
+
+float terrain(vec2 ps){
+    return 20*fbm(spaceMap(ps));
+}
+
+vec3 v3dterrain(vec2 ps){
+    return vec3(ps.x, terrain(ps), ps.y);
 }
 
 vec3 getNorm(vec2 pos){
@@ -68,18 +78,47 @@ vec3 getNorm(vec2 pos){
     return cross(vec3(uop.x, uoy, uop.y), vec3(oop.x, ooy, oop.y));
 }
 
+vec3 getBetterNorm(vec2 pos, float cy){
+    vec3 cspace = vec3(pos.x, cy, pos.y);
+    vec3 norm = vec3(0.0);
+
+    //generate offset vectors
+    vec2 vert = vec2(0.0, -1.0); // Offset up
+    vec2 horz = vec2(1.0, 0.0); // Offset right
+
+    vec2 offsetpos[6] = vec2[6](
+            pos + vert,
+            pos + vert + horz,
+            pos + horz,
+            pos - vert,
+            pos - vert - horz,
+            pos - horz
+    );
+
+    for (int i = 0; i<6; i++){
+        vec3 p1 = v3dterrain(offsetpos[i]);
+        vec3 p2 = v3dterrain(offsetpos[(i+1)%6]);
+
+        norm += cross(p1 - cspace, p2 - cspace);
+    }
+
+    return norm/6;
+}
+
 
 out vec3 Normal;
 out vec3 fragPos;
+out vec3 worldPos;
 
 void main() {
     vec3 st = aPos;
     float t = u_time;
 
-    st.y = 10*fbm(st.xz);
-    vec3 aN = normalize(getNorm(st.xz));
+    st.y = terrain(st.xz);
+    vec3 aN = normalize(getBetterNorm(st.xz, st.y));
 
     gl_Position = projection * view * model * vec4(st, 1.0);
     Normal = aN;
     fragPos = vec3(model*vec4(st, 1.0));
+    worldPos = st;
 }

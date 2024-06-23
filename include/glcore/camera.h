@@ -28,7 +28,7 @@ public:
   void cursor_position_callback(float xoffset, float yoffset);
   void scroll_callback(float yoffset);
   
-private:
+protected:
   glm::vec3 up_;
   glm::vec3 front_;
   glm::vec3 right_;
@@ -36,6 +36,7 @@ private:
   glm::vec3 direction_;
 
   void updateVectors();
+
 };
 
 #endif // _CAMERA_H_
