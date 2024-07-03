@@ -1,12 +1,20 @@
-#version 330 core
+#version 400 core
+#define MAX_TERRAIN_ARGS
 
 layout (location = 0) in vec3 aPos;
+
+uniform vec2 seed2 = vec2(12.9898,78.233);
+uniform vec3 seed3 = vec3(12.9898,78.233,56.3212);
 
 uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
 
+uniform int terrainGen = 0;
+
 uniform float u_time;
+uniform float world_scale = 0.1;
+
 
 const float PI = 3.14159265;
 
@@ -14,13 +22,13 @@ float amp = 1.;
 float freq = .1;
 
 float random (vec2 st) {
-  return fract(sin(dot(st.xy,
-                       vec2(12.9898,78.233)))*43758.5453123);
+    return fract(sin(dot(st.xy,
+                         seed2))*43758.5453123);
 }
 
 float random (vec3 st) {
     return fract(sin(dot(st.xyz,
-                         vec3(12.9898,78.233,56.3212)))*43758.5453123);
+                         seed3))*43758.5453123);
 }
 
 float noise(vec2 st){
@@ -40,6 +48,11 @@ float noise(vec2 st){
     (d - b) * u.x * u.y;
 }
 
+vec2 spaceMap(vec2 ps){
+    return ps*world_scale;
+}
+
+// default fbm terrain generation
 #define OCTAVES 12
 float fbm (vec2 st) {
     // Initial values
@@ -56,12 +69,20 @@ float fbm (vec2 st) {
     return value;
 }
 
-vec2 spaceMap(vec2 ps){
-    return ps*0.1;
+// introduce gauss distortion over fbm to simulate a mountain
+float fbmOverGauss (vec2 st) {
+    float gs = exp(-length(st)/2);
+    return gs + fbm(st);
 }
 
 float terrain(vec2 ps){
-    return 20*fbm(spaceMap(ps));
+    if (terrainGen == 0){
+        return 10*fbm(spaceMap(ps));
+
+    }
+    else if (terrainGen == 1) {
+        return 10*fbmOverGauss(spaceMap(ps));
+    }
 }
 
 vec3 v3dterrain(vec2 ps){
@@ -106,16 +127,20 @@ vec3 getBetterNorm(vec2 pos, float cy){
 }
 
 
+
+
 out vec3 Normal;
 out vec3 fragPos;
 out vec3 worldPos;
+
 
 void main() {
     vec3 st = aPos;
     float t = u_time;
 
     st.y = terrain(st.xz);
-    vec3 aN = normalize(getBetterNorm(st.xz, st.y));
+    vec3 aN = -normalize(getBetterNorm(st.xz, st.y));
+
 
     gl_Position = projection * view * model * vec4(st, 1.0);
     Normal = aN;

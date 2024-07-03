@@ -61,6 +61,17 @@ Shader::Shader(const string &vertexPath, const string &geometryPath,
   GL_CHECK_ERRORS(id_, GL_LINK_STATUS, glGetProgramiv, glGetProgramInfoLog);
 }
 
+Shader::Shader(const string &vertexPath, const string &tessControl, const string &tessEval,
+               const string &fragmentPath) {
+  id_ = glCreateProgram();
+  attachSource(id_, GL_VERTEX_SHADER, vertexPath);
+  attachSource(id_, GL_TESS_CONTROL_SHADER, tessControl);
+  attachSource(id_, GL_TESS_EVALUATION_SHADER, tessEval);
+  attachSource(id_, GL_FRAGMENT_SHADER, fragmentPath);
+  glLinkProgram(id_);
+  GL_CHECK_ERRORS(id_, GL_LINK_STATUS, glGetProgramiv, glGetProgramInfoLog);
+}
+
 Shader::Shader(Shader &&o): id_(o.id_) {
   o.id_ = 0;
 }
