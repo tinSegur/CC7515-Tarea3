@@ -101,7 +101,7 @@ vec3 brown = vec3(0.569, 0.467, 0.059);
 
 
 vec3 colorizeterrain(vec3 ps){
-  float f = ps.y/30.0;
+  float f = ps.y/20.0;
   vec3 interpcolor = mix(mix(green, brown, (1-f)), mix(brown, vec3(1.0), f), f);
   interpcolor = interpcolor*fbm(ps.xz);
   return interpcolor;

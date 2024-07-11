@@ -10,6 +10,12 @@ public:
          const std::string &fragmentPath);
   Shader(const std::string &vertexPath, const std::string &tessControl, const std::string &tessEval,
                const std::string &fragmentPath);
+
+  Shader(const std::string &vertexPath,
+  const std::string &tessControl, const std::string &tessEval,
+  const std::string &geometryPath,
+  const std::string &fragmentPath);
+
   Shader(Shader &&);
   Shader &operator=(Shader &&);
   ~Shader();

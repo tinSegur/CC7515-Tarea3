@@ -5,18 +5,6 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <memory>
 
-class SquarePrimitiveBuffer : BasicBuffer {
-  using BasicBuffer::BasicBuffer;
-
-public:
-  void draw() override {
-    bind();
-
-    glDrawArrays(GL_QUADS, 0, vertices_.size());
-  }
-};
-
-
 class SquarePatchBuffer : BasicBuffer {
   using BasicBuffer::BasicBuffer;
   public:
@@ -25,7 +13,7 @@ class SquarePatchBuffer : BasicBuffer {
     bind();
 
     glPatchParameteri(GL_PATCH_VERTICES, 4);
-    glDrawArrays(GL_PATCHES, 0, vertices_.size()/3);
+    glDrawElements(GL_PATCHES, indices_.size(), GL_UNSIGNED_INT, 0);
   }
 
   void build() override {
@@ -33,21 +21,18 @@ class SquarePatchBuffer : BasicBuffer {
     glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertices_.size(),
                  vertices_.data(), GL_STATIC_DRAW);
 
-    if (indices_.size() == 0) {
+    /*if (indices_.size() == 0) {
       printf("a");
       for (unsigned int i = 0; i < vertices_.size(); i++) {
         indices_.push_back(i);
       }
-    }
+    }*/
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * indices_.size(),
                  indices_.data(), GL_STATIC_DRAW);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)0);
     glEnableVertexAttribArray(0);
   }
 };
-
-
-
 
 class MyCam : public Camera {
 public:
@@ -74,6 +59,12 @@ public:
                                       SHADER_PATH "terrain_tess_eval.tese",
                                       SHADER_PATH "terrain_fragment.glsl");
 
+    cline_shader = std::make_unique<Shader>(SHADER_PATH "reference_vs.glsl",
+                                    SHADER_PATH "terrain_tess_control.tesc",
+                                  SHADER_PATH "cline_tess_eval.glsl",
+                                          SHADER_PATH "geometry.geom",
+                                  SHADER_PATH "cline_fragment.glsl");
+
     sun_shader = std::make_unique<Shader>(SHADER_PATH "sun_vertex.glsl",
                                           SHADER_PATH "sun_fragment.glsl");
 
@@ -88,7 +79,6 @@ public:
     nbuf = std::make_unique<BasicBuffer>(data, inds);
     pbuf = std::make_unique<SquarePatchBuffer>(generatePatchPlaneVx(settings.patch_num, settings.patch_num), generatePatchPlaneInds(settings.patch_num, settings.patch_num));
     sunbuf = std::make_unique<BasicBuffer>(generateCubeVx(2.0), generateCubeInds());
-    sqbuf = std::make_unique<SquarePrimitiveBuffer>(generatePlaneVx(settings.patch_num, settings.patch_num), generatePatchPlaneInds(settings.patch_num, settings.patch_num));
     sqsun = std::make_unique<SquarePatchBuffer>(generateCubeVx(2), generateCubePatchInds());
 
     nbuf->build();
@@ -206,12 +196,12 @@ private:
   std::unique_ptr<Shader> tess_shader;
   std::unique_ptr<Shader> sun_shader;
   std::unique_ptr<Shader> tess_sun_shader;
+  std::unique_ptr<Shader> cline_shader;
   std::unique_ptr<MyCam> cam;
 
   std::unique_ptr<BasicBuffer> nbuf;
   std::unique_ptr<SquarePatchBuffer> pbuf;
   std::unique_ptr<SquarePatchBuffer> sqsun;
-  std::unique_ptr<SquarePrimitiveBuffer> sqbuf;
   std::unique_ptr<BasicBuffer> sunbuf;
 
   std::vector<Texture> textures;
@@ -268,12 +258,14 @@ private:
 
     model = glm::translate(model, glm::vec3(0.0));
     sun_shader->set("model", model);
-    sqbuf->draw();
     //nbuf->draw();
 
     glEnable(GL_CULL_FACE);
     glCullFace(GL_FRONT);
     initTerrainUniforms(tess_shader);
+    pbuf->draw();
+
+    initTerrainUniforms(cline_shader);
     pbuf->draw();
 
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -370,35 +362,28 @@ private:
     float max_z = 100.0;
     float z_step = (max_z - min_z)/height;
 
-    for (int i = 0; i<height; i++) {
+    for (int i = 0; i<height+1; i++) {
       float nrow = min_z + z_step*i;
-      for (int j = 0; j<width; j++) {
+      for (int j = 0; j<width+1; j++) {
         float ncol = min_x + x_step*j;
         vertices.emplace_back(ncol);
         vertices.emplace_back(0.0);
         vertices.emplace_back(nrow);
 
-        vertices.emplace_back(ncol + x_step);
+        /*vertices.emplace_back(ncol + x_step);
         vertices.emplace_back(0.0);
-        vertices.emplace_back(nrow);
+        vertices.emplace_back(nrow);*/
 
-        vertices.emplace_back(ncol + x_step);
+        /*vertices.emplace_back(ncol + x_step);
         vertices.emplace_back(0.0);
-        vertices.emplace_back(nrow + z_step);
+        vertices.emplace_back(nrow + z_step);*/
 
-        vertices.emplace_back(ncol);
+        /*vertices.emplace_back(ncol);
         vertices.emplace_back(0.0);
-        vertices.emplace_back(nrow + z_step);
-
-
-
+        vertices.emplace_back(nrow + z_step);*/
 
       }
     }
-
-
-
-
     return vertices;
   }
 
@@ -408,17 +393,18 @@ private:
     for (int row = 0; row<height; row++) {
       for (int col = 0; col<width; col ++) {
 
-        int curInd = row*width + col;
-        int diagDown = curInd + width + 1;
+        int curInd = row*(width+1) + col;
+        int diagDown = curInd + (width+1) + 1;
         int next = curInd + 1;
-        int down = curInd + width;
+        int down = curInd + (width+1);
 
         if (row < height-1 && col < width - 1) { // generar índices de cuadrados
 
-          inds.emplace_back(down);
-          inds.emplace_back(diagDown);
-          inds.emplace_back(next);
           inds.emplace_back(curInd);
+          inds.emplace_back(next);
+          inds.emplace_back(diagDown);
+          inds.emplace_back(down);
+
         }
       }
     }
@@ -434,9 +420,9 @@ private:
         float z = pow(-1, k)*edge_len/2;
         for (int i = 0; i<2; i++) {
           float x = pow(-1, i)*edge_len/2;
-          vxs.emplace_back(x);
-          vxs.emplace_back(y);
-          vxs.emplace_back(z);
+          vxs.emplace_back(x/2);
+          vxs.emplace_back(y/2);
+          vxs.emplace_back(z/2);
         }
       }
     }
@@ -446,13 +432,14 @@ private:
 
   std::vector<unsigned int> generateCubePatchInds() {
     std::vector<unsigned int> inds = {
-      0, 1, 2, 3, // bottom face
-      4, 5, 6, 7, // top face
-      0, 1, 4, 5, // front face
-      2, 3, 6, 7, // back face
-      1, 2, 5, 6, // right face
-      0, 3, 4, 7 // left face
+      0, 2, 3, 1, // top face
+      5, 7, 6, 4, // bottom face
+      5, 4, 0, 1, // front face
+      7, 3, 2, 6, // back face
+      4, 6, 2, 0, // right face
+      5, 1, 3, 7 // left face
     };
+    return inds;
   }
 
   std::vector<unsigned int> generateCubeInds() {
