@@ -2,7 +2,7 @@
 
 layout (quads, fractional_even_spacing, ccw) in;
 
-
+uniform float seed = 43758.5453123;
 uniform vec2 seed2 = vec2(12.9898,78.233);
 uniform vec3 seed3 = vec3(12.9898,78.233,56.3212);
 
@@ -23,12 +23,12 @@ float freq = .1;
 
 float random (vec2 st) {
     return fract(sin(dot(st.xy,
-                         seed2))*43758.5453123);
+                         seed2))*seed);
 }
 
 float random (vec3 st) {
     return fract(sin(dot(st.xyz,
-                         seed3))*43758.5453123);
+                         seed3))*seed);
 }
 
 float noise(vec2 st){
@@ -75,6 +75,13 @@ float fbmOverGauss (vec2 st) {
     return gs + fbm(st);
 }
 
+// introduce second derivative of gauss distortion over fbm to simulate canyon
+float fbmOverCanyon(vec2 st) {
+    float sq = st.y*st.y;
+    float cn = (sq - 1)*exp(-sq/2);
+    return cn + fbm(st);
+}
+
 float terrain(vec2 ps){
     if (terrainGen == 0){
         return 20*fbm(spaceMap(ps));
@@ -82,6 +89,9 @@ float terrain(vec2 ps){
     }
     else if (terrainGen == 1) {
         return 20*fbmOverGauss(spaceMap(ps));
+    }
+    else if (terrainGen == 2) {
+        return 20*fbmOverCanyon(spaceMap(ps));
     }
 }
 

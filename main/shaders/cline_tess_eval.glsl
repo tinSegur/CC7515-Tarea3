@@ -2,7 +2,7 @@
 
 layout (quads, fractional_even_spacing, ccw) in;
 
-
+float seed = 43758.5453123;
 uniform vec2 seed2 = vec2(12.9898,78.233);
 uniform vec3 seed3 = vec3(12.9898,78.233,56.3212);
 
@@ -23,12 +23,12 @@ float freq = .1;
 
 float random (vec2 st) {
     return fract(sin(dot(st.xy,
-                         seed2))*43758.5453123);
+                         seed2))*seed);
 }
 
 float random (vec3 st) {
     return fract(sin(dot(st.xyz,
-                         seed3))*43758.5453123);
+                         seed3))*seed);
 }
 
 float noise(vec2 st){

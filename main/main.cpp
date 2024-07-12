@@ -1,9 +1,10 @@
 #include <cstdlib>
 #include <glcore/camera.h>
 #include <glcore/core.h>
-#include <glcore/texture.h>
 #include <glm/gtc/matrix_transform.hpp>
 #include <memory>
+#include <random>
+#include <iostream>
 
 class SquarePatchBuffer : BasicBuffer {
   using BasicBuffer::BasicBuffer;
@@ -96,7 +97,8 @@ public:
 
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
-
+    mt = std::mt19937(std::random_device()());
+    urd = std::uniform_real_distribution<float>(0.0, 10000.0);
   }
 
 
@@ -178,10 +180,11 @@ private:
           clineh = 9.0, dayspeed = 1.0,
           sunr = 4.0, world_scale = 0.1,
           fog_f = 0.5;
+    float seed = 43758.5453123;
     int container, face;
     int mesh_res = 400;
     int terrain_gen = 0;
-    int gen_num = 2;
+    int gen_num = 3;
     int patch_num = 10;
 
     bool better_sun = true;
@@ -204,8 +207,12 @@ private:
   std::unique_ptr<SquarePatchBuffer> sqsun;
   std::unique_ptr<BasicBuffer> sunbuf;
 
-  std::vector<Texture> textures;
   std::vector<glm::vec3> positions;
+
+  //random number generation
+  std::mt19937 mt;
+  std::uniform_real_distribution<float> urd;
+
 
   void render() override {
     App::render();
@@ -220,8 +227,12 @@ private:
     ImGui::SliderFloat("LightX", &settings.sunPos.x, 0.0, 15.0);
     ImGui::SliderFloat("LightY", &settings.sunPos.y, 15.0, 40.0);
     ImGui::SliderFloat("LightZ", &settings.sunPos.z, 0.0, 15.0);
-    if (ImGui::Button("Switch Terrain")) {
+    if (ImGui::Button("Switch Terrain Type")) {
       settings.terrain_gen = (settings.terrain_gen + 1)%settings.gen_num;
+    }
+    if (ImGui::Button("Generate New Terrain")) {
+      settings.seed = urd(mt);
+      std::cout << settings.seed << "\n";
     }
     ImGui::End();
 
@@ -258,18 +269,12 @@ private:
 
     model = glm::translate(model, glm::vec3(0.0));
     sun_shader->set("model", model);
-    //nbuf->draw();
 
     glEnable(GL_CULL_FACE);
     glCullFace(GL_FRONT);
     initTerrainUniforms(tess_shader);
     pbuf->draw();
 
-    initTerrainUniforms(cline_shader);
-    pbuf->draw();
-
-    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    //nbuf->draw();
 
   }
 
@@ -293,6 +298,7 @@ private:
     shader->set("terrainGen", settings.terrain_gen);
     shader->set("world_scale", settings.world_scale);
     shader->set("fog_f", settings.fog_f);
+    shader->set("seed", settings.seed);
 
   }
 
@@ -369,19 +375,6 @@ private:
         vertices.emplace_back(ncol);
         vertices.emplace_back(0.0);
         vertices.emplace_back(nrow);
-
-        /*vertices.emplace_back(ncol + x_step);
-        vertices.emplace_back(0.0);
-        vertices.emplace_back(nrow);*/
-
-        /*vertices.emplace_back(ncol + x_step);
-        vertices.emplace_back(0.0);
-        vertices.emplace_back(nrow + z_step);*/
-
-        /*vertices.emplace_back(ncol);
-        vertices.emplace_back(0.0);
-        vertices.emplace_back(nrow + z_step);*/
-
       }
     }
     return vertices;
